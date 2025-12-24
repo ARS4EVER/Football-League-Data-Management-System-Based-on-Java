@@ -1,0 +1,54 @@
+# 足球联赛数据管理系统 - 项目依赖文档
+
+## 一、后端依赖（Java - Spring Boot）
+
+### 核心依赖
+- Spring Boot 2.7.14
+- Spring Boot Starter Web
+- MyBatis Plus 3.5.3
+- MySQL 驱动 8.0.33
+- Lombok
+- Spring Boot Starter Test（测试用）
+
+### 配置文件
+- application.yml：后端服务器、数据库连接、MyBatis Plus等配置
+
+## 二、前端依赖（Vue.js）
+
+### 核心依赖
+- Vue 2.6.14
+- Vue Router 3.5.2
+- Element UI 2.15.13
+- Axios 0.27.2
+- ECharts 6.0.0
+
+### 开发依赖
+- @vue/cli-service ^5.0.0
+
+### 配置文件
+- package.json：依赖管理和脚本定义
+- vue.config.js：前端开发服务器和代理配置
+- main.js：前端应用初始化配置
+
+## 三、数据库
+- MySQL 数据库
+- 初始化脚本：init.sql（创建表结构和默认数据）
+
+## 四、运行环境要求
+- Java 1.8 或以上
+- Node.js 和 npm（推荐 Node.js 14.x 或以上）
+- MySQL 5.7 或以上
+
+## 五、服务启动端口
+- 后端：8080
+- 前端：3000
+
+## 六、数据库配置
+- 数据库名：football_league
+- 默认用户名：root
+- 默认密码：123456
+- 连接URL：jdbc:mysql://127.0.0.1:3306/football_league?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+
+## 七、默认管理员账号
+- 用户名：admin
+- 密码：123456
