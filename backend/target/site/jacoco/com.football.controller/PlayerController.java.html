@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlayerController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">足球联赛数据管理系统</a> &gt; <a href="index.source.html" class="el_package">com.football.controller</a> &gt; <span class="el_source">PlayerController.java</span></div><h1>PlayerController.java</h1><pre class="source lang-java linenums">package com.football.controller;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.football.common.PermissionChecker;
+import com.football.common.Result;
+import com.football.entity.IdDto;
+import com.football.entity.Player;
+import com.football.mapper.PlayerMapper;
+import com.football.service.PlayerService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 球员控制器
+ */
+@RestController
+@RequestMapping(&quot;/player&quot;)
+<span class="nc" id="L29">public class PlayerController {</span>
+
+    @Autowired
+    private PlayerService playerService;
+
+    @Autowired
+    private PlayerMapper playerMapper;
+
+<span class="nc" id="L37">    private static final Map&lt;String, String&gt; DIMENSION_MAPPING = new HashMap&lt;&gt;();</span>
+    static {
+<span class="nc" id="L39">        DIMENSION_MAPPING.put(&quot;goals&quot;, &quot;进球数&quot;);</span>
+<span class="nc" id="L40">        DIMENSION_MAPPING.put(&quot;assists&quot;, &quot;助攻数&quot;);</span>
+<span class="nc" id="L41">        DIMENSION_MAPPING.put(&quot;appearances&quot;, &quot;出场数&quot;);</span>
+<span class="nc" id="L42">        DIMENSION_MAPPING.put(&quot;age&quot;, &quot;年龄&quot;);</span>
+<span class="nc" id="L43">        DIMENSION_MAPPING.put(&quot;height&quot;, &quot;身高(米)&quot;);</span>
+<span class="nc" id="L44">        DIMENSION_MAPPING.put(&quot;weight&quot;, &quot;体重(公斤)&quot;);</span>
+<span class="nc" id="L45">        DIMENSION_MAPPING.put(&quot;number&quot;, &quot;球衣号码&quot;);</span>
+<span class="nc" id="L46">    }</span>
+
+    /**
+     * 分页查询球员
+     */
+    @PostMapping(&quot;/query_page&quot;)
+    public Result&lt;Page&lt;Player&gt;&gt; queryPage(@RequestParam(defaultValue = &quot;1&quot;) Integer current,
+                                         @RequestParam(defaultValue = &quot;10&quot;) Integer size,
+                                         @RequestParam(required = false) String name,
+                                         @RequestParam(required = false) Integer teamId) {
+<span class="nc" id="L56">        Page&lt;Player&gt; page = playerService.queryPage(current, size, name, teamId);</span>
+<span class="nc" id="L57">        return Result.success(page);</span>
+    }
+
+    /**
+     * 根据ID查询球员
+     */
+    @GetMapping(&quot;/select_by_id&quot;)
+    public Result&lt;Player&gt; selectById(@RequestParam Integer id) {
+<span class="nc" id="L65">        Player player = playerService.selectById(id);</span>
+<span class="nc" id="L66">        return Result.success(player);</span>
+    }
+
+    /**
+     * 保存球员
+     */
+    @PostMapping(&quot;/save&quot;)
+    public Result&lt;Boolean&gt; save(@RequestBody Player player) {
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (!PermissionChecker.canWrite(&quot;player&quot;)) {</span>
+<span class="nc" id="L75">            return Result.error(&quot;无权限操作&quot;);</span>
+        }
+        // 如果是球队工作人员，检查是否只能操作自己球队的球员
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        if (player.getId() != null) {</span>
+            // 更新操作，需要检查权限
+<span class="nc" id="L80">            Player existingPlayer = playerService.selectById(player.getId());</span>
+<span class="nc bnc" id="L81" title="All 4 branches missed.">            if (existingPlayer != null &amp;&amp; !PermissionChecker.canOperatePlayer(existingPlayer)) {</span>
+<span class="nc" id="L82">                return Result.error(&quot;无权限操作该球员&quot;);</span>
+            }
+<span class="nc" id="L84">        } else {</span>
+            // 新增操作，球队工作人员只能添加自己球队的球员
+<span class="nc bnc" id="L86" title="All 2 branches missed.">            if (!PermissionChecker.canOperatePlayerByTeamId(player.getTeamId())) {</span>
+<span class="nc" id="L87">                return Result.error(&quot;无权限操作该球队的球员&quot;);</span>
+            }
+        }
+<span class="nc" id="L90">        boolean result = playerService.save(player);</span>
+<span class="nc" id="L91">        return Result.success(result);</span>
+    }
+
+    /**
+     * 根据ID删除球员
+     */
+    @PostMapping(&quot;/delete_by_id&quot;)
+    public Result&lt;Boolean&gt; deleteById(@RequestParam Integer id) {
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        if (!PermissionChecker.canWrite(&quot;player&quot;)) {</span>
+<span class="nc" id="L100">            return Result.error(&quot;无权限操作&quot;);</span>
+        }
+<span class="nc" id="L102">        Player player = playerService.selectById(id);</span>
+<span class="nc bnc" id="L103" title="All 4 branches missed.">        if (player != null &amp;&amp; !PermissionChecker.canOperatePlayer(player)) {</span>
+<span class="nc" id="L104">            return Result.error(&quot;无权限操作该球员&quot;);</span>
+        }
+<span class="nc" id="L106">        boolean result = playerService.deleteById(id);</span>
+<span class="nc" id="L107">        return Result.success(result);</span>
+    }
+
+    @GetMapping(&quot;/all_list&quot;)
+    public Result allList(){
+
+<span class="nc" id="L113">        List&lt;Player&gt; playerList = playerMapper.selectList(null);</span>
+
+<span class="nc" id="L115">        return Result.success(playerList);</span>
+
+    }
+
+    @PostMapping(&quot;/echarts_analysis&quot;)
+    public Result echartsAnalysis(@RequestBody IdDto dto){
+
+        try {
+            // 1. 基础参数校验
+<span class="nc" id="L124">            List&lt;Integer&gt; idList = dto.getIdList();</span>
+<span class="nc" id="L125">            List&lt;String&gt; dimensionList = dto.getDimensionList();</span>
+<span class="nc bnc" id="L126" title="All 4 branches missed.">            if (idList == null || idList.size() &lt; 2) {</span>
+<span class="nc" id="L127">                return Result.error(&quot;请选择两名及以上球员进行对比&quot;);</span>
+            }
+<span class="nc bnc" id="L129" title="All 4 branches missed.">            if (dimensionList == null || dimensionList.isEmpty()) {</span>
+<span class="nc" id="L130">                return Result.error(&quot;请指定至少一个分析维度&quot;);</span>
+            }
+
+            // 2. 维度合法性校验
+<span class="nc" id="L134">            List&lt;String&gt; validDimensions = validateDimensions(dimensionList);</span>
+<span class="nc bnc" id="L135" title="All 2 branches missed.">            if (validDimensions.isEmpty()) {</span>
+<span class="nc" id="L136">                return Result.error(&quot;无有效分析维度，支持的维度：&quot; + DIMENSION_MAPPING.keySet());</span>
+            }
+
+            // 3. 查询球员数据
+<span class="nc" id="L140">            LambdaQueryWrapper&lt;Player&gt; queryWrapper = new LambdaQueryWrapper&lt;&gt;();</span>
+<span class="nc" id="L141">            queryWrapper.in(Player::getId, idList);</span>
+<span class="nc" id="L142">            List&lt;Player&gt; playerList = playerMapper.selectList(queryWrapper);</span>
+
+            // 4. 动态组装ECharts雷达图数据（根据前端传的维度）
+<span class="nc" id="L145">            Map&lt;String, Object&gt; echartsData = buildDynamicRadarData(playerList, validDimensions);</span>
+
+<span class="nc" id="L147">            return Result.success(echartsData);</span>
+<span class="nc" id="L148">        } catch (Exception e) {</span>
+<span class="nc" id="L149">            e.printStackTrace();</span>
+<span class="nc" id="L150">            return Result.error(&quot;获取球员分析数据失败：&quot; + e.getMessage());</span>
+        }
+    }
+
+    /**
+     * 校验前端传的维度是否合法（只保留存在的维度）
+     */
+    private List&lt;String&gt; validateDimensions(List&lt;String&gt; dimensionList) {
+<span class="nc" id="L158">        List&lt;String&gt; validDimensions = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">        for (String dimension : dimensionList) {</span>
+<span class="nc bnc" id="L160" title="All 4 branches missed.">            if (StringUtils.hasText(dimension) &amp;&amp; DIMENSION_MAPPING.containsKey(dimension)) {</span>
+<span class="nc" id="L161">                validDimensions.add(dimension);</span>
+            }
+<span class="nc" id="L163">        }</span>
+<span class="nc" id="L164">        return validDimensions;</span>
+    }
+
+
+    /**
+     * 动态构建雷达图数据
+     */
+    private Map&lt;String, Object&gt; buildDynamicRadarData(List&lt;Player&gt; playerList, List&lt;String&gt; validDimensions) {
+<span class="nc" id="L172">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+
+<span class="nc" id="L174">        List&lt;String&gt; indicator = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">        for (String dimension : validDimensions) {</span>
+<span class="nc" id="L176">            indicator.add(DIMENSION_MAPPING.get(dimension));</span>
+<span class="nc" id="L177">        }</span>
+<span class="nc" id="L178">        result.put(&quot;indicator&quot;, indicator);</span>
+
+<span class="nc" id="L180">        List&lt;Map&lt;String, Object&gt;&gt; seriesData = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">        for (Player player : playerList) {</span>
+<span class="nc" id="L182">            Map&lt;String, Object&gt; playerData = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L183">            playerData.put(&quot;name&quot;, player.getName()); // 球员姓名</span>
+
+<span class="nc" id="L185">            List&lt;Number&gt; valueList = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">            for (String dimension : validDimensions) {</span>
+<span class="nc" id="L187">                Number value = getPlayerDimensionValue(player, dimension);</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">                valueList.add(value == null ? 0 : value);</span>
+<span class="nc" id="L189">            }</span>
+<span class="nc" id="L190">            playerData.put(&quot;value&quot;, valueList);</span>
+<span class="nc" id="L191">            seriesData.add(playerData);</span>
+<span class="nc" id="L192">        }</span>
+<span class="nc" id="L193">        result.put(&quot;seriesData&quot;, seriesData);</span>
+
+<span class="nc" id="L195">        return result;</span>
+    }
+
+    /**
+     * 通过反射获取Player对象指定维度的属性值
+     */
+    private Number getPlayerDimensionValue(Player player, String dimension) {
+        try {
+<span class="nc" id="L203">            Field field = Player.class.getDeclaredField(dimension);</span>
+<span class="nc" id="L204">            field.setAccessible(true); // 允许访问私有字段</span>
+<span class="nc" id="L205">            Object value = field.get(player);</span>
+
+<span class="nc bnc" id="L207" title="All 2 branches missed.">            if (value instanceof Integer) {</span>
+<span class="nc" id="L208">                return (Integer) value;</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">            } else if (value instanceof BigDecimal) {</span>
+<span class="nc" id="L210">                return ((BigDecimal) value).doubleValue();</span>
+            } else {
+<span class="nc" id="L212">                return 0;</span>
+            }
+<span class="nc" id="L214">        } catch (NoSuchFieldException | IllegalAccessException e) {</span>
+<span class="nc" id="L215">            e.printStackTrace();</span>
+<span class="nc" id="L216">            return 0;</span>
+        }
+    }
+
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

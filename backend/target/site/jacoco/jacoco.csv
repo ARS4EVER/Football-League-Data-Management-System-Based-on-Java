@@ -1,0 +1,14 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+足球联赛数据管理系统,com.football.controller,UserController,86,0,6,0,22,0,11,0,8,0
+足球联赛数据管理系统,com.football.controller,PlayerController,377,0,44,0,88,0,33,0,11,0
+足球联赛数据管理系统,com.football.controller,MatchController,51,0,4,0,13,0,7,0,5,0
+足球联赛数据管理系统,com.football.controller,TeamController,51,0,4,0,13,0,7,0,5,0
+足球联赛数据管理系统,com.football.controller,LeagueController,39,0,0,0,9,0,5,0,5,0
+足球联赛数据管理系统,com.football.controller,MatchRecordController,51,0,4,0,13,0,7,0,5,0
+足球联赛数据管理系统,com.football,FootballLeagueApplication,23,0,0,0,8,0,2,0,2,0
+足球联赛数据管理系统,com.football.service.impl,LeagueServiceImpl,46,0,4,0,9,0,7,0,5,0
+足球联赛数据管理系统,com.football.service.impl,UserServiceImpl,91,0,4,0,18,0,9,0,7,0
+足球联赛数据管理系统,com.football.service.impl,PlayerServiceImpl,53,0,6,0,11,0,8,0,5,0
+足球联赛数据管理系统,com.football.service.impl,MatchRecordServiceImpl,43,0,2,0,9,0,6,0,5,0
+足球联赛数据管理系统,com.football.service.impl,MatchServiceImpl,43,0,2,0,9,0,6,0,5,0
+足球联赛数据管理系统,com.football.service.impl,TeamServiceImpl,4,42,2,2,1,8,3,4,1,4
