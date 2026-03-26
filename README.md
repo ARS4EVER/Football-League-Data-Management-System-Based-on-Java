@@ -186,3 +186,7 @@ npm run serve
 ## 联系方式
 
 如有问题或建议，请联系系统管理员。
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/image?repos=ARS4EVER/QSP&type=date&logscale&legend=bottom-right)](https://www.star-history.com/?repos=ARS4EVER%2FQSP&type=date&logscale=&legend=bottom-right)
